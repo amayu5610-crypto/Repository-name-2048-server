@@ -38,7 +38,8 @@ app.post("/save-score", async (req, res) => {
 
     const userAgent = req.headers["user-agent"];
 
-    // 不正チェック
+    // ===== 不正チェック =====
+
     if (!score || score < 0) {
       return res.status(400).json({
         success: false,
@@ -67,8 +68,10 @@ app.post("/save-score", async (req, res) => {
       });
     }
 
-    await db.collection("scores").add({
-      name,
+    // ===== Firestore保存 =====
+
+    await db.collection("history2048").add({
+      game_name: name,
       score,
       mode: mode || "normal",
       playTime: playTime || null,
@@ -77,19 +80,22 @@ app.post("/save-score", async (req, res) => {
       ip,
       userAgent,
       suspicious: false,
-      createdAt:
-        admin.firestore.FieldValue.serverTimestamp(),
+      updated_at: new Date().toISOString()
     });
 
-    res.json({ success: true });
+    res.json({
+      success: true
+    });
 
   } catch (err) {
+
     console.error("保存エラー:", err);
 
     res.status(500).json({
       success: false,
       error: err.message
     });
+
   }
 });
 
